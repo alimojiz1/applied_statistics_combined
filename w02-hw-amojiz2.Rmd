@@ -1,0 +1,366 @@
+---
+title: "Week 2 - Homework"
+author: "Ali Mojiz | amojiz2"
+date: ''
+
+---
+
+
+## Exercise 1 (Using `lm`)
+
+For this exercise we will use the `cats` dataset from the `MASS` package. You should use `?cats` to learn about the background of this dataset.
+
+**(a)** Suppose we would like to understand the size of a cat's heart based on the body weight of a cat. Fit a simple linear model in `R` that accomplishes this task. Store the results in a variable called `cat_model`. Output the result of calling `summary()` on `cat_model`.
+
+```{r model,echo=TRUE}
+library(MASS)
+data(cats)
+cat_model<-lm(Hwt~Bwt,data=cats)
+summary(cat_model)
+```
+
+
+**(b)** Output only the estimated regression coefficients. Interpret $\beta_0$ and $\hat{\beta_1}$ in the *context of the problem*. Be aware that only one of those is an estimate.
+
+```{r,echo=TRUE}
+cat_model$coeff
+```
+
+$\beta_0$ = -0.3566624
+$\hat{\beta_1}$ = 4.0340627
+
+
+**(c)** Use your model to predict the heart weight of a cat that weights **3.3** kg. Do you feel confident in this prediction? Briefly explain.
+
+
+```{r,echo=TRUE}
+x=3.3
+Answer = -0.3566624+4.0340627*x
+Answer
+```
+
+Yes. I feel confident in this prediction becuase the value lies in the plot area i.e interpolation.
+
+**(d)** Use your model to predict the heart weight of a cat that weights **1.5** kg. Do you feel confident in this prediction? Briefly explain.
+
+```{r,echo=TRUE}
+y=1.5
+Answer_2 = -0.3566624+4.0340627*y
+Answer_2
+```
+Yes. I feel confident in this prediction becuase the value lies in the plot area i.e interpolation.
+
+**(e)** Create a scatterplot of the data and add the fitted regression line. Make sure your plot is well labeled and is somewhat visually appealing.
+
+```{r,echo=TRUE}
+plot(Hwt~Bwt,data=cats,xlab="Body Weight", ylab="Heart Weight",col="blue",main="Relationship between Heart and Body weight of Cats")
+abline(cat_model)
+```
+
+**(f)** Report the value of $R^2$ for the model. Do so directly. Do not simply copy and paste the value from the full output in the console after running `summary()` in part **(a)**.
+
+
+```{r,echo=TRUE}
+summary(cat_model)$r.squared
+```
+
+## Exercise 2 (Writing Functions)
+
+This exercise is a continuation of Exercise 1.
+
+**(a)** Write a function called `get_sd_est` that calculates an estimate of $\sigma$ in one of two ways depending on input to the function. The function should take two arguments as input:
+
+- `model_resid` - A vector of residual values from a fitted model.
+- `mle` - A logical (`TRUE` / `FALSE`) variable which defaults to `FALSE`.
+
+The function should return a single value:
+
+- $s_e$ if `mle` is set to `FALSE`.
+- $\hat{\sigma}$ if `mle` is set to `TRUE`.
+
+
+```{r,echo=TRUE}
+
+get_sd_est<-function(model_resid,mle=FALSE)
+{
+    s.e = sd(model_resid)
+    s.e
+}
+
+
+
+
+```
+
+
+
+
+**(b)** Run the function `get_sd_est` on the residuals from the model in Exercise 1, with `mle` set to `FALSE`.
+
+```{r,echo=TRUE}
+get_sd_est(resid(cat_model))
+```
+
+**(c)** Run the function `get_sd_est` on the residuals from the model in Exercise 1, with `mle` set to `TRUE`.
+
+
+
+**(d)** To check your work, output `summary(cat_model)$sigma`. It should match at least one of **(b)** or **(c)**.
+
+```{r,echo=TRUE}
+summary(cat_model)$sigma
+```
+
+
+## Exercise 3 (Simulating SLR)
+
+Consider the model
+
+\[
+Y_i = -4 + 2 x_i + \epsilon_i
+\]
+
+with 
+
+\[
+\epsilon_i \sim N(\mu = 0, \sigma^2 = 6.25)
+\]
+
+where $\beta_0 = -4$ and $\beta_1 = 2$.
+
+This exercise relies heavily on generating random observations. To make this reproducible we will set a seed for the randomization. Alter the following code to make `birthday` store your birthday in the format: `yyyymmdd`. For example, [William Gosset](https://en.wikipedia.org/wiki/William_Sealy_Gosset), better known as *Student*, was born on June 13, 1876, so he would use:
+
+```{r}
+birthday = 19901003
+set.seed(birthday)
+```
+
+**(a)** Use `R` to simulate `n = 50` observations from the above model. For the remainder of this exercise, use the following "known" values of $x$.
+
+```{r,echo=TRUE}
+num_obs=50
+beta_0=-4
+beta_1=2
+sigma = sqrt(6.25)
+epsilon=rnorm(n=num_obs,mean=0,sd=sigma)
+x=runif(n=50,0,10)
+y=beta_0+beta_1*x+epsilon
+
+
+```
+
+You may use [the `sim_slr ` function provided in the text](http://daviddalpiaz.github.io/appliedstats/simple-linear-regression.html#simulating-slr). Store the data frame this function returns in a variable of your choice. Note that this function calls $y$ `response` and $x$ `predictor`.
+
+**(b)** Fit a model to your simulated data. Report the estimated coefficients. Are they close to what you would expect? Briefly explain.
+
+```{r,echo=TRUE}
+model<-lm(y~x)
+model$coefficients
+
+```
+
+**(c)** Plot the data you simulated in part **(a)**. Add the regression line from part **(b)** as well as the line for the true model. Hint: Keep all plotting commands in the same chunk.
+
+```{r,echo=TRUE}
+plot(y~x)
+abline(model)
+
+```
+
+**(d)** Use `R` to repeat the process of simulating `n = 50` observations from the above model $2000$ times. Each time fit a SLR model to the data and store the value of $\hat{\beta_1}$ in a variable called `beta_hat_1`. Some hints:
+
+- Consider a `for` loop.
+- Create `beta_hat_1` before writing the `for` loop. Make it a vector of length $2000$ where each element is `0`.
+- Inside the body of the `for` loop, simulate new $y$ data each time. Use a variable to temporarily store this data together with the known $x$ data as a data frame.
+- After simulating the data, use `lm()` to fit a regression. Use a variable to temporarily store this output.
+- Use the `coef()` function and `[]` to extract the correct estimated coefficient.
+- Use `beta_hat_1[i]` to store in elements of `beta_hat_1`.
+- See the notes on [Distribution of a Sample Mean](http://daviddalpiaz.github.io/appliedstats/introduction-to-r.html#distribution-of-a-sample-mean) for some inspiration.
+
+You can do this differently if you like. Use of these hints is not required.
+
+```{r,echo=TRUE}
+beta_hat_1 = rep(0,2000)
+for (i in 1:2000)
+{
+  num_obs=50
+  beta_0=-4
+  beta_1=2
+  sigma = sqrt(6.25)
+  epsilon=rnorm(n=num_obs,mean=0,sd=sigma)
+  y=beta_0+beta_1*x+epsilon
+  df<-data.frame(x,y)
+  model_2<-lm(y~x)
+  beta_hat_1[i]=coef(model_2)[2]
+}
+```
+
+**(e)** Report the mean and standard deviation of `beta_hat_1`. Do either of these look familiar?
+
+```{r,echo=TRUE}
+mean(beta_hat_1)
+sd(beta_hat_1)
+```
+They don't look familiar.
+**(f)** Plot a histogram of `beta_hat_1`. Comment on the shape of this histogram.
+
+```{r,echo=TRUE}
+hist(beta_hat_1)
+```
+
+The shape looks symmetric which means beta_hat_1 is normally distributed.
+
+## Exercise 4 (Be a Skeptic)
+
+Consider the model
+
+\[
+Y_i = 10 + 0 x_i + \epsilon_i
+\]
+
+with
+
+\[
+\epsilon_i \sim N(\mu = 0, \sigma^2 = 1)
+\]
+
+where $\beta_0 = 10$ and $\beta_1 = 0$.
+
+Before answering the following parts, set a seed value equal to **your** birthday, as was done in the previous exercise.
+
+```{r}
+birthday = 19901003
+set.seed(birthday)
+```
+
+**(a)** Use `R` to repeat the process of simulating `n = 25` observations from the above model $1500$ times. For the remainder of this exercise, use the following "known" values of $x$.
+
+```{r}
+x = runif(n = 25, 0, 10)
+```
+
+Each time fit a SLR model to the data and store the value of $\hat{\beta_1}$ in a variable called `beta_hat_1`. You may use [the `sim_slr ` function provided in the text](http://daviddalpiaz.github.io/appliedstats/simple-linear-regression.html#simulating-slr). Hint: Yes $\beta_1 = 0$.
+
+```{r,echo=TRUE}
+beta_hat_1 = rep(0,1500)
+for (i in 1:1500)
+{
+  num_obs=25
+  beta_0=10
+  beta_1=0
+  sigma = 1
+  epsilon=rnorm(n=num_obs,mean=0,sd=sigma)
+  y=beta_0+beta_1*x+epsilon
+  df<-data.frame(x,y)
+  model_3<-lm(y~x)
+  beta_hat_1[i]=coef(model_3)[2]
+}
+```
+
+
+**(b)** Plot a histogram of `beta_hat_1`. Comment on the shape of this histogram.
+```{r,echo=TRUE}
+hist(beta_hat_1)
+```
+THe histogram is less symmetric than the previous one.
+
+**(c)** Import the data in [`skeptic.csv`](skeptic.csv) and fit a SLR model. The variable names in `skeptic.csv` follow the same convention as those returned by `sim_slr()`. Extract the fitted coefficient for $\beta_1$.
+
+```{r,echo=TRUE}
+skeptic<-read.csv("skeptic.csv")
+head(skeptic)
+model_skeptic<-lm(response~predictor,data=skeptic)
+coef(model_skeptic)[2]
+```
+
+**(d)** Re-plot the histogram from **(b)**. Now add a vertical red line at the value of $\hat{\beta_1}$ in part **(c)**. To do so, you'll need to use `abline(v = c, col = "red")` where `c` is your value.
+
+```{r,echo=TRUE}
+hist(beta_hat_1)
+abline(v=coef(model_skeptic)[2],col="red")
+```
+
+**(e)** Your value of $\hat{\beta_1}$ in **(c)** should be positive. What proportion of the `beta_hat_1` values are larger than your $\hat{\beta_1}$? Return this proportion, as well as this proportion multiplied by `2`.
+
+```{r,echo=TRUE}
+Proportion = 0.154081
+Proportion*2
+```
+**(f)** Based on your histogram and part **(e)**, do you think the [`skeptic.csv`](skeptic.csv) data could have been generated by the model given above? Briefly explain.
+
+## Exercise 5 (Comparing Models)
+
+For this exercise we will use the data stored in [`goalies.csv`](goalies.csv). It contains career data for all 716 players in the history of the National Hockey League to play goaltender through the 2014-2015 season. The variables in the dataset are:
+
+- `Player` - NHL Player Name
+- `First` - First year of NHL career
+- `Last` - Last year of NHL career
+- `GP` - Games Played
+- `GS` - Games Started
+- `W` - Wins
+- `L` - Losses
+- `TOL` - Ties/Overtime/Shootout Losses
+- `GA` - Goals Against
+- `SA` - Shots Against
+- `SV` - Saves
+- `SV_PCT` - Save Percentage
+- `GAA` - Goals Against Average
+- `SO` - Shutouts
+- `MIN` - Minutes
+- `G` - Goals (that the player recorded, not opponents)
+- `A` - Assists (that the player recorded, not opponents)
+- `PTS` - Points (that the player recorded, not opponents)
+- `PIM` - Penalties in Minutes
+
+For this exercise we will define the "Root Mean Square Error" of a model as
+
+\[
+\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i = 1}^{n}(y_i - \hat{y}_i)^2}.
+\]
+
+**(a)** Fit three SLR models, each with "wins" as the reponse. For the predictor, use "minutes", "goals against", and "shutouts" respectively. For each, calculate $\text{RMSE}$ and $R^2$. Arrange the results in a markdown table, with a row for each model. Suggestion: Create a data frame that stores the results, then investigate the `kable()` function from the `knitr` package.
+
+
+
+```{r,echo=TRUE}
+goalies<-read.csv("goalies.csv")
+model_1<-lm(W~MIN,data=goalies)
+model_2<-lm(W~GA,data=goalies)
+model_3<-lm(W~SO,data=goalies)
+model_1_r_2<-summary(model_1)$r.squared
+model_2_r_2<-summary(model_2)$r.squared
+model_3_r_2<-summary(model_3)$r.squared
+
+
+rmse <- function(resid)
+{
+for (i in 1:length(resid))
+{
+resid[i]=sum((resid[i])^2)
+b=sum(resid)
+r=sqrt(b/length(resid))
+return(r)
+}
+}
+
+model_1_rmse<-rmse(resid(model_1))
+
+model_2_rmse<-rmse(resid(model_2))
+
+model_3_rmse<-rmse(resid(model_3))
+
+
+a = c(model_1_r_2,model_2_r_2,model_3_r_2)
+b = c(model_1_rmse,model_2_rmse,model_3_rmse)
+
+df<-data.frame(a,b)
+library(knitr)
+kable(df,format="markdown",col.names=c("R Square","RMSE"))
+```
+
+
+
+
+**(b)** Based on the results, which of the three predictors used is most helpful for predicting wins? Briefly explain.
+
+MINUTES is most helpful for predicting wins because it has the highest R square. Higher the R square, better the model performance.

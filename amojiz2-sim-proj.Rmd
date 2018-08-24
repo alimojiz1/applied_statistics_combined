@@ -1,0 +1,1941 @@
+---
+title: "Simulation Project"
+author: "STAT 420, Summer 2017, Ali Mojiz,| amojiz2"
+
+---
+
+#Simulation Study 1
+
+##Introduction
+
+The following equation shows the multiple linear regression model which will be used in this simulation study:
+
+y=$\beta_0$ + $\beta_1$x1 + $\beta_2$x2 + $\beta_3$x3 + $\beta_4$x4 + $\epsilon$
+
+where
+
+$\beta_0$=2
+$\beta_1$=1
+$\beta_2$=1
+$\beta_3$=1
+$\beta_4$=1
+
+Since $\hat\beta_0$, $\hat\beta_1$,$\hat\beta_2$,$\hat\beta_3$ and $\hat\beta_4$ are a linear combination of Y and Y is normally distributed, then all the $\beta$ coefficients are also normally distributed $\mu$ equal to the actual beta value provided and Var[$\beta_hat$] equal to $\sigma^2$($X^T$X$)^-1$. Therfore, 
+
+$\beta_hat$ ~ N($\beta$,$\sigma^2$($X^T$X$)^-1$))
+
+
+In the following study, we will investigate the distribution of a number of regression estimates with three different values of $\sigma$. Moreover, we will also investigate the distribution of $s_e^2$ and $\E(\hat\y(x))$. We will use 3000 simulations and estimate the value of $\beta$ coefficient and variance. Same process will follow for $s_e^2$ and $\E(\hat\y(x))$. In order to see the validity of empirical and true distribution, We will plot a histogram of empirical values (result of 3000 simulations) and add a curve of the true estimate to see if it follows a normal distribution.
+
+##Methods
+```{r}
+birthday = 19901003
+set.seed(birthday)
+n=15
+sigma_1=1
+sigma_2=5
+sigma_3=10
+
+beta_0=2
+beta_1=1
+beta_2=1
+beta_3=1
+beta_4=1
+
+beta_hat_1 = rep(0,3000) #making a beta_hat_1 vector with all zeroes. 
+e_y = rep(0,3000)
+s_e_2 = rep(0,3000)
+
+study_1<-read.csv("study_1.csv") #import data containing the values of predictors
+
+X = as.matrix(study_1[,c(2:5)])
+C=solve(t(X)%*%X) 
+
+x1=study_1$x1
+x2=study_1$x2
+x3=study_1$x3
+x4=study_1$x4
+
+
+#the following loop performs 3000 simulations with sigma = 1
+for (i in 1:3000)
+{
+  eps=rnorm(n,mean=0,sd=sigma_1)
+  y = beta_0 + beta_1*x1 + beta_2*x2 + beta_3*x3 + beta_4*x4 + eps
+  model<-lm(y~x1+x2+x3+x4)
+  s_e_2[i]<-summary(model)$sigma^2
+  beta_hat_1[i]=coef(model)[2]
+  e_y[i]=coef(model)[1]-3*coef(model)[2]+2.5*coef(model)[3]+0.5*coef(model)[4]
+}
+
+s_e_2_1=s_e_2 #empirical value of standard error with sigma 1
+
+beta_hat_1_1 = beta_hat_1 #storing the empirical value of beta_hat_1 with sigma 1
+
+e_y_1 = e_y #storing the empirical value of the expected value for the provided values of x with sigma 1
+
+a_y = 2-3+2.5+0.5
+
+var_1 = sigma_1^2*C[1,1]
+
+
+#the following loop performs 3000 simulations with sigma = 5
+for (i in 1:3000)
+{
+  eps=rnorm(n,mean=0,sd=sigma_2)
+  y = beta_0 + beta_1*x1 + beta_2*x2 + beta_3*x3 + beta_4*x4 + eps
+  model<-lm(y~x1+x2+x3+x4)
+  s_e_2[i]=summary(model)$sigma^2 #calculate variance of standard error
+  beta_hat_1[i]=coef(model)[2]
+  e_y[i]=coef(model)[1]-3*coef(model)[2]+2.5*coef(model)[3]+0.5*coef(model)[4]
+}
+
+s_e_2_2 = s_e_2 #empirical value of variance of standard error with sigma 5
+
+beta_hat_1_2 = beta_hat_1 #storing the empirical value of beta_hat_1 with sigma 5
+
+var_2 = sigma_2^2*C[1,1]
+
+e_y_2 = e_y #storing the empirical value of expected value for the provided values of x
+
+#the following loop performs 3000 simulations with sigma = 10
+for (i in 1:3000)
+{
+  eps=rnorm(n,mean=0,sd=sigma_3)
+  y = beta_0 + beta_1*x1 + beta_2*x2 + beta_3*x3 + beta_4*x4 + eps #the linear regression equation for calculating the values of y
+  model<-lm(y~x1+x2+x3+x4)
+  s_e_2[i]=summary(model)$sigma^2 #calculate variance of standard error
+  beta_hat_1[i]=coef(model)[2]
+  e_y[i]=coef(model)[1]-3*coef(model)[2]+2.5*coef(model)[3]+0.5*coef(model)[4]
+}
+
+s_e_2_3=s_e_2 #empirical value of standard error with sigma 10
+
+beta_hat_1_3 = beta_hat_1 #storing the empirical value of beta_hat_1 with sigma 10
+
+var_3 = sigma_3^2*C[1,1]
+
+e_y_3 = e_y #storing the empirical value of the expected value of the provided values for x
+```
+
+##Results
+
+
+
+Distribution of $\hat\beta_1$, $s_e^2$ and $\E(\hat\y(x))$ with sigma = 1
+
+$\hat\beta_1$ ~ N(1,0.01843812)
+
+$s_e^2$ ~ N(1,0.2033999)
+
+$\hat\E(y(x))$ ~ N(2,4.090254)
+
+
+```{r}
+par(mfrow=c(1,3))
+hist(beta_hat_1_1,prob=TRUE,breaks=20,xlab=expression(hat(beta)[1]),main="",border="dodgerblue")
+curve(dnorm(x,mean=beta_1,sd=sqrt(var_1)),col="darkorange",add=TRUE,lwd=3)
+
+hist(s_e_2_1,prob=TRUE,breaks=20,xlab=expression(s[e]^2),main="",border="dodgerblue")
+
+
+hist(e_y_1,prob=TRUE,breaks=20,xlab=expression(hat(E)(y(x)))[1],main="",border="dodgerblue")
+curve(dnorm(x,mean=a_y,sd=sigma_1),col="darkorange",add=TRUE,lwd=3)
+
+
+```
+
+Distribution of $\hat\beta_1$, $s_e^2$ and $\E(\hat\y(x))$ with sigma = 5
+
+$\hat\beta_1$ ~ N(1,0.460953)
+
+$s_e^2$ ~ N(1,)
+
+$\hat\E(y(x))$ ~ N(2,4.090254)
+
+```{r}
+par(mfrow=c(1,3))
+hist(beta_hat_1_2,prob=TRUE,breaks=20,xlab=expression(hat(beta)[1]),main="",border="dodgerblue")
+curve(dnorm(x,mean=beta_1,sd=sqrt(var_2)),col="darkorange",add=TRUE,lwd=3)
+
+hist(s_e_2_2,prob=TRUE,breaks=20,xlab=expression(s[e]^2),main="",border="dodgerblue")
+
+
+hist(e_y_2,prob=TRUE,breaks=20,xlab=expression(hat(E)(y(x)))[1],main="",border="dodgerblue")
+curve(dnorm(x,mean=a_y,sd=sigma_2),col="darkorange",add=TRUE,lwd=3)
+
+
+```
+
+
+Distribution of $\hat\beta_1$, $s_e^2$ and $\E(\hat\y(x))$ with sigma = 10
+
+$\hat\beta_1$ ~ N(1,1.843812)
+
+$s_e^2$ ~ N(1,var(s_e_2_1))
+
+$\hat\E(y(x))$ ~ N(2,var(e_y_1))
+
+```{r}
+par(mfrow=c(1,3))
+hist(beta_hat_1_3,prob=TRUE,breaks=20,xlab=expression(hat(beta)[1]),main="",border="dodgerblue")
+curve(dnorm(x,mean=beta_1,sd=sqrt(var_3)),col="darkorange",add=TRUE,lwd=3)
+
+hist(s_e_2_3,prob=TRUE,breaks=20,xlab=expression(s[e]^2),main="",border="dodgerblue")
+
+
+hist(e_y_3,prob=TRUE,breaks=20,xlab=expression(hat(E)(y(x)))[1],main="",border="dodgerblue")
+curve(dnorm(x,mean=a_y,sd=sigma_3),col="darkorange",add=TRUE,lwd=3)
+
+
+```
+
+#Discussion
+
+
+
+
+
+
+
+
+
+##Simulation Study 2
+
+#Introduction
+
+The root-mean-square deviation (RMSD) or root-mean-square error (RMSE) is a frequently used measure of the differences between values (sample and population values) predicted by a model or an estimator and the values actually observed. In this simulation, We will consider a sample size of 600 and three possible values of 2. 9 models with different predictors and select the best model based on RMSE. Lower the RMSE, better the model.
+
+#Methods
+
+```{r}
+birthday = 19901003
+set.seed(birthday)
+library(hydroGOF)
+study_2<-read.csv("study_2.csv")
+
+
+n=600
+beta_0 = 0
+beta_1 = 6
+beta_2 = -3.5
+beta_3 = 1.7
+beta_4 = -1.1
+beta_5 = 0.7
+
+sigma_1 = 1
+sigma_2 = 2
+sigma_3 = 4
+
+
+rmse_fit_1_train=rep(0,500)
+rmse_fit_2_train=rep(0,500)
+rmse_fit_3_train=rep(0,500)
+rmse_fit_4_train=rep(0,500)
+rmse_fit_5_train=rep(0,500)
+rmse_fit_6_train=rep(0,500)
+rmse_fit_7_train=rep(0,500)
+rmse_fit_8_train=rep(0,500)
+rmse_fit_9_train=rep(0,500)
+
+rmse_fit_1_test=rep(0,500)
+rmse_fit_2_test=rep(0,500)
+rmse_fit_3_test=rep(0,500)
+rmse_fit_4_test=rep(0,500)
+rmse_fit_5_test=rep(0,500)
+rmse_fit_6_test=rep(0,500)
+rmse_fit_7_test=rep(0,500)
+rmse_fit_8_test=rep(0,500)
+rmse_fit_9_test=rep(0,500)
+
+
+
+#simulating with sigma = 1
+for (i in 1:500)
+{
+ train_index = sample(1:nrow(study_2),300) 
+ train_data = study_2[train_index,]#random 300 observation for train data
+ test_data = study_2[-train_index,]#random 300 observation for test data
+ e = rnorm(300, mean= 0, sd=sigma_1)
+ #simulating y
+ train_data$y = with(train_data,beta_0 + beta_1*x1 + beta_2*x2 + beta_3*x3 + beta_4*x4+  beta_5*x5 + e)
+ test_data$y = with(test_data,beta_0 + beta_1*x1 + beta_2*x2 + beta_3*x3 + beta_4*x4+  beta_5*x5 + e)
+ fit_1 = lm(y~x1, data=train_data)
+ fit_2 = lm(y~x1+x2, data=train_data)
+ fit_3 = lm(y~x1+x2+x3, data=train_data)
+ fit_4 = lm(y~x1+x2+x3+x4,data=train_data)
+ fit_5 = lm(y~x1+x2+x3+x4+x5,data=train_data)
+ fit_6 = lm(y~x1+x2+x3+x4+x5+x6,data=train_data)
+ fit_7 = lm(y~x1+x2+x3+x4+x5+x6+x7,data=train_data)
+ fit_8 = lm(y~x1+x2+x3+x4+x5+x6+x7+x8,data=train_data)
+ fit_9 = lm(y~x1+x2+x3+x4+x5+x6+x7+x8+x9,data=train_data)
+ #calculating train RMSE
+ rmse_fit_1_train[i] = rmse(predict(fit_1,train_data),train_data$y)
+ rmse_fit_2_train[i] = rmse(predict(fit_2,train_data),train_data$y)
+ rmse_fit_3_train[i] = rmse(predict(fit_3,train_data),train_data$y)
+ rmse_fit_4_train[i] = rmse(predict(fit_4,train_data),train_data$y)
+ rmse_fit_5_train[i] = rmse(predict(fit_5,train_data),train_data$y)
+ rmse_fit_6_train[i] = rmse(predict(fit_6,train_data),train_data$y)
+ rmse_fit_7_train[i] = rmse(predict(fit_7,train_data),train_data$y)
+ rmse_fit_8_train[i] = rmse(predict(fit_8,train_data),train_data$y)
+ rmse_fit_9_train[i] = rmse(predict(fit_9,train_data),train_data$y)
+ 
+ #calculating test RMSE
+ rmse_fit_1_test[i] = rmse(predict(fit_1,test_data),test_data$y)
+ rmse_fit_2_test[i] = rmse(predict(fit_2,test_data),test_data$y)
+ rmse_fit_3_test[i] = rmse(predict(fit_3,test_data),test_data$y)
+ rmse_fit_4_test[i] = rmse(predict(fit_4,test_data),test_data$y)
+ rmse_fit_5_test[i] = rmse(predict(fit_5,test_data),test_data$y)
+ rmse_fit_6_test[i] = rmse(predict(fit_6,test_data),test_data$y)
+ rmse_fit_7_test[i] = rmse(predict(fit_7,test_data),test_data$y)
+ rmse_fit_8_test[i] = rmse(predict(fit_8,test_data),test_data$y)
+ rmse_fit_9_test[i] = rmse(predict(fit_9,test_data),test_data$y)
+  
+ 
+}
+
+
+#Taking average of train RMSE
+train_errors_1 = c(mean(rmse_fit_1_train),mean(rmse_fit_2_train),mean(rmse_fit_3_train),mean(rmse_fit_4_train),mean(rmse_fit_5_train),mean(rmse_fit_6_train),mean(rmse_fit_7_train),mean(rmse_fit_8_train),mean(rmse_fit_9_train))
+
+
+
+#Taking average of test RMSE
+test_errors_1 = c(mean(rmse_fit_1_test),mean(rmse_fit_2_test),mean(rmse_fit_3_test),mean(rmse_fit_4_test),mean(rmse_fit_5_test),mean(rmse_fit_6_test),mean(rmse_fit_7_test),mean(rmse_fit_8_test),mean(rmse_fit_9_test))
+
+
+#placing the train and test RMSE in a data frame.
+model_names = c("fit_1", "fit_2", "fit_3", "fit_4",
+                "fit_5","fit_6","fit_7","fit_8","fit_9")
+results_1 = data.frame(model_names, train_errors_1, test_errors_1)
+colnames(results_1) = c("Model", "Train RMSE", "Test RMSE")
+
+
+
+#simulating with sigma=2
+for (i in 1:500)
+{
+ train_index = sample(1:nrow(study_2),300) 
+ train_data = study_2[train_index,]#random 300 observation for train data
+ test_data = study_2[-train_index,]#random 300 observation for test data
+ e = rnorm(300, mean= 0, sd=sigma_2)
+ #simulating y
+ train_data$y = with(train_data,beta_0 + beta_1*x1 + beta_2*x2 + beta_3*x3 + beta_4*x4+  beta_5*x5 + e)
+ test_data$y = with(test_data,beta_0 + beta_1*x1 + beta_2*x2 + beta_3*x3 + beta_4*x4+  beta_5*x5 + e)
+ fit_1 = lm(y~x1, data=train_data)
+ fit_2 = lm(y~x1+x2, data=train_data)
+ fit_3 = lm(y~x1+x2+x3, data=train_data)
+ fit_4 = lm(y~x1+x2+x3+x4,data=train_data)
+ fit_5 = lm(y~x1+x2+x3+x4+x5,data=train_data)
+ fit_6 = lm(y~x1+x2+x3+x4+x5+x6,data=train_data)
+ fit_7 = lm(y~x1+x2+x3+x4+x5+x6+x7,data=train_data)
+ fit_8 = lm(y~x1+x2+x3+x4+x5+x6+x7+x8,data=train_data)
+ fit_9 = lm(y~x1+x2+x3+x4+x5+x6+x7+x8+x9,data=train_data)
+ 
+ #calculating train RMSE
+ rmse_fit_1_train[i] = rmse(predict(fit_1,train_data),train_data$y)
+ rmse_fit_2_train[i] = rmse(predict(fit_2,train_data),train_data$y)
+ rmse_fit_3_train[i] = rmse(predict(fit_3,train_data),train_data$y)
+ rmse_fit_4_train[i] = rmse(predict(fit_4,train_data),train_data$y)
+ rmse_fit_5_train[i] = rmse(predict(fit_5,train_data),train_data$y)
+ rmse_fit_6_train[i] = rmse(predict(fit_6,train_data),train_data$y)
+ rmse_fit_7_train[i] = rmse(predict(fit_7,train_data),train_data$y)
+ rmse_fit_8_train[i] = rmse(predict(fit_8,train_data),train_data$y)
+ rmse_fit_9_train[i] = rmse(predict(fit_9,train_data),train_data$y)
+ 
+ #calculating test RMSE
+ rmse_fit_1_test[i] = rmse(predict(fit_1,test_data),test_data$y)
+ rmse_fit_2_test[i] = rmse(predict(fit_2,test_data),test_data$y)
+ rmse_fit_3_test[i] = rmse(predict(fit_3,test_data),test_data$y)
+ rmse_fit_4_test[i] = rmse(predict(fit_4,test_data),test_data$y)
+ rmse_fit_5_test[i] = rmse(predict(fit_5,test_data),test_data$y)
+ rmse_fit_6_test[i] = rmse(predict(fit_6,test_data),test_data$y)
+ rmse_fit_7_test[i] = rmse(predict(fit_7,test_data),test_data$y)
+ rmse_fit_8_test[i] = rmse(predict(fit_8,test_data),test_data$y)
+ rmse_fit_9_test[i] = rmse(predict(fit_9,test_data),test_data$y)
+ 
+ 
+ 
+}
+
+
+
+#Taking average of train RMSE
+train_errors_2 = c(mean(rmse_fit_1_train),mean(rmse_fit_2_train),mean(rmse_fit_3_train),mean(rmse_fit_4_train),mean(rmse_fit_5_train),mean(rmse_fit_6_train),mean(rmse_fit_7_train),mean(rmse_fit_8_train),mean(rmse_fit_9_train))
+
+
+
+#Taking average of test RMSE
+test_errors_2 = c(mean(rmse_fit_1_test),mean(rmse_fit_2_test),mean(rmse_fit_3_test),mean(rmse_fit_4_test),mean(rmse_fit_5_test),mean(rmse_fit_6_test),mean(rmse_fit_7_test),mean(rmse_fit_8_test),mean(rmse_fit_9_test))
+
+
+
+model_names = c("fit_1", "fit_2", "fit_3", "fit_4",
+                "fit_5","fit_6","fit_7","fit_8","fit_9")
+results_2 = data.frame(model_names, train_errors_2, test_errors_2)
+colnames(results_2) = c("Model", "Train RMSE", "Test RMSE")
+
+
+
+#simulating with sigma=4
+for (i in 1:500)
+{
+ train_index = sample(1:nrow(study_2),300) 
+ train_data = study_2[train_index,]#random 300 observation for train data
+ test_data = study_2[-train_index,]#random 300 observation for test data
+ e = rnorm(300, mean= 0, sd=sigma_3)
+ #simulating y
+ train_data$y = with(train_data,beta_0 + beta_1*x1 + beta_2*x2 + beta_3*x3 + beta_4*x4+  beta_5*x5 + e)
+ test_data$y = with(test_data,beta_0 + beta_1*x1 + beta_2*x2 + beta_3*x3 + beta_4*x4+  beta_5*x5 + e)
+ fit_1 = lm(y~x1, data=train_data)
+ fit_2 = lm(y~x1+x2, data=train_data)
+ fit_3 = lm(y~x1+x2+x3, data=train_data)
+ fit_4 = lm(y~x1+x2+x3+x4,data=train_data)
+ fit_5 = lm(y~x1+x2+x3+x4+x5,data=train_data)
+ fit_6 = lm(y~x1+x2+x3+x4+x5+x6,data=train_data)
+ fit_7 = lm(y~x1+x2+x3+x4+x5+x6+x7,data=train_data)
+ fit_8 = lm(y~x1+x2+x3+x4+x5+x6+x7+x8,data=train_data)
+ fit_9 = lm(y~x1+x2+x3+x4+x5+x6+x7+x8+x9,data=train_data)
+ 
+ #calculating train RMSE
+ rmse_fit_1_train[i] = rmse(predict(fit_1,train_data),train_data$y)
+ rmse_fit_2_train[i] = rmse(predict(fit_2,train_data),train_data$y)
+ rmse_fit_3_train[i] = rmse(predict(fit_3,train_data),train_data$y)
+ rmse_fit_4_train[i] = rmse(predict(fit_4,train_data),train_data$y)
+ rmse_fit_5_train[i] = rmse(predict(fit_5,train_data),train_data$y)
+ rmse_fit_6_train[i] = rmse(predict(fit_6,train_data),train_data$y)
+ rmse_fit_7_train[i] = rmse(predict(fit_7,train_data),train_data$y)
+ rmse_fit_8_train[i] = rmse(predict(fit_8,train_data),train_data$y)
+ rmse_fit_9_train[i] = rmse(predict(fit_9,train_data),train_data$y)
+ 
+ #calculating test RMSE
+ rmse_fit_1_test[i] = rmse(predict(fit_1,test_data),test_data$y)
+ rmse_fit_2_test[i] = rmse(predict(fit_2,test_data),test_data$y)
+ rmse_fit_3_test[i] = rmse(predict(fit_3,test_data),test_data$y)
+ rmse_fit_4_test[i] = rmse(predict(fit_4,test_data),test_data$y)
+ rmse_fit_5_test[i] = rmse(predict(fit_5,test_data),test_data$y)
+ rmse_fit_6_test[i] = rmse(predict(fit_6,test_data),test_data$y)
+ rmse_fit_7_test[i] = rmse(predict(fit_7,test_data),test_data$y)
+ rmse_fit_8_test[i] = rmse(predict(fit_8,test_data),test_data$y)
+ rmse_fit_9_test[i] = rmse(predict(fit_9,test_data),test_data$y)
+ 
+ 
+ 
+  
+}
+
+
+#Taking average of train RMSE
+train_errors_3 = c(mean(rmse_fit_1_train),mean(rmse_fit_2_train),mean(rmse_fit_3_train),mean(rmse_fit_4_train),mean(rmse_fit_5_train),mean(rmse_fit_6_train),mean(rmse_fit_7_train),mean(rmse_fit_8_train),mean(rmse_fit_9_train))
+
+
+
+#Taking average of test RMSE
+test_errors_3 = c(mean(rmse_fit_1_test),mean(rmse_fit_2_test),mean(rmse_fit_3_test),mean(rmse_fit_4_test),mean(rmse_fit_5_test),mean(rmse_fit_6_test),mean(rmse_fit_7_test),mean(rmse_fit_8_test),mean(rmse_fit_9_test))
+
+model_names = c("fit_1", "fit_2", "fit_3", "fit_4",
+                "fit_5","fit_6","fit_7","fit_8","fit_9")
+results_3 = data.frame(model_names, train_errors_3, test_errors_3)
+colnames(results_3) = c("Model", "Train RMSE", "Test RMSE")
+
+
+
+```
+
+
+#Results
+
+```{r}
+#Plotting the graphs for RMSE with different sigma values
+
+par(mfrow=c(1,3))
+
+plot(results_1$`Train RMSE`,type="o",col="red",xlab="Model Number",ylab="RMSE", main="RMSE of Models with Sigma=1")
+
+lines(results_1$`Test RMSE`,col="blue",pch=23)
+
+legend("topright",1,legend=c("Train RMSE","Test RMSE"),col=c("red","blue"),pch="-")
+
+plot(results_2$`Train RMSE`,type="o",col="red",xlab="Model Number",ylab="RMSE",main="RMSE of Models with Sigma=2")
+
+lines(results_2$`Test RMSE`,col="blue",pch=23)
+
+legend("topright",1,legend=c("Train RMSE","Test RMSE"),col=c("red","blue"),pch="-")
+
+plot(results_3$`Train RMSE`,type="o",col="red",xlab="Model Number",ylab="RMSE",main="RMSE of Models with Sigma=4")
+
+lines(results_3$`Test RMSE`,col="blue",pch=23)
+
+legend("topright",1,legend=c("Train RMSE","Test RMSE"),col=c("red","blue"),pch="-")
+```
+
+##Discussion
+
+
+Yes. The method always selects the correct model with different sigma values as shown in the graphs above. It selects model 9 on Train Data and model 5 on Test Data. Lower the RMSE, better the model. Therefore, the model with the lowest RMSE is selected. With increasing sigma, the difference between Train and TEST RMSE increases with increasing model size. With sigma=10, the difference is maximum and RMSE values are also maximum as compared to models with sigma values equal to 1 and 4.
+
+#Simulation Study 3
+
+##Introduction
+
+In this simulation study we will investigate the power of the significance of regression test for simple linear regression. Power is the probability of rejecting the null hypothesis when the null is not true, that is, the alternative is true and $\beta_1$ is non-zero.
+
+Power = 1 - $\beta$ = P[Reject $H_o$|$H_1$ True]
+
+
+We'll investigate the following things which affect the power of a test:
+
+-Signal Strength $\beta_1$
+-Noise Level $\sigma$
+-Significane Level $\alpha$
+
+We've been given the following model to simulate from:
+
+Y = $\beta_0$ + $\beta_1$x + e
+
+We're given multiple $\beta_1$, $\sigma$ and $\alpha$ values to simulate the model 1000 times. We'll estimate the power using these simulations and compare the results of power for different values of sthe aforementioned parametes, beta, sigma and alpha. 
+
+##Methods
+
+```{r}
+birthday = 19901003
+set.seed(birthday)
+
+#declaring sigma values given in the question
+sigma_1 = 1
+sigma_2 = 2
+sigma_3 = 4
+
+
+#assigning values to beta_1
+beta_1 = seq(0,3,by=0.1)
+
+#declaring alpha values given in the question
+alpha_1 = rep(0.01,1000)
+alpha_2 = rep(0.05,1000)
+alpha_3 = rep(0.10,1000)
+
+
+x_values = seq(0,5,length=25)
+num_sims=1000
+n=0
+p_value = rep(0,1000)
+
+#simulating y for sigma=1 and beta_1 = 0.1
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[2]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha   
+}
+
+power_1 = n/num_sims
+
+
+
+#simulating y for sigma=1 and beta_1 = 0.2
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[3]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha  
+}
+
+power_2 = n/num_sims
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 0.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[4]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_3 = n/num_sims
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 0.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[4]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_4 = n/num_sims
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 0.4
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[5]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_5 = n/num_sims
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 0.5
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[6]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_6 = n/num_sims
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 0.6
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[7]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_7 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 0.7
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[8]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_8 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 0.8
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[9]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_9 = n/num_sims
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 0.9
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[10]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_10 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 1
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[11]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_11 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 1.1
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[12]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_12 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 1.2
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[13]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_13 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 1.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[14]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_14 = n/num_sims
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 1.4
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[15]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_15 = n/num_sims
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 1.5
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[16]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_16 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 1.6
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[17]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_17 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 1.7
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[18]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_18 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 1.8
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[19]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_19 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 1.9
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[20]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_20 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 2.0
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[21]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_21 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 2.1
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[22]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_22 = n/num_sims
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 2.2
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[23]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_23 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 2.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[24]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_24 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 2.4
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[25]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_25 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 2.5
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[26]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_26 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 2.6
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[27]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_27 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 2.7
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[28]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_28 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 2.8
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[29]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_29 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 2.9
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[30]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_30 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 1 and beta_1 = 3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_1)
+  y=beta_1[31]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_1[i]){n=n+1}#comparing p value with alpha
+}
+
+power_31 = n/num_sims
+
+
+power_sigma_1 = c(power_1,power_2,power_3,power_4,power_5,power_6,power_7,power_8,power_9,power_10,power_11,power_12,power_13,power_14,power_15,power_16,power_17,power_18,power_19,power_20,power_21,power_22,power_23,power_24,power_25,power_26,power_27,power_28,power_29,power_30,power_31)
+
+
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[2]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha   
+}
+
+power_1 = n/num_sims
+
+
+
+#simulating y for sigma=2 and beta_1 = 0.2
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[3]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha  
+}
+
+power_2 = n/num_sims
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 0.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[4]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_3 = n/num_sims
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 0.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[4]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_4 = n/num_sims
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 0.4
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[5]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_5 = n/num_sims
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 0.5
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[6]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_6 = n/num_sims
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 0.6
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[7]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_7 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 0.7
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[8]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_8 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 0.8
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[9]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_9 = n/num_sims
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 0.9
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[10]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_10 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 1
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[11]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_11 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 1.1
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[12]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_12 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 1.2
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[13]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_13 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 1.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[14]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_14 = n/num_sims
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 1.4
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[15]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_15 = n/num_sims
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 1.5
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[16]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_16 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 1.6
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[17]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_17 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 1.7
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[18]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_18 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 1.8
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[19]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_19 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 1.9
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[20]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_20 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 2.0
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[21]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_21 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 2.1
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[22]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_22 = n/num_sims
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 2.2
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[23]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_23 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 2.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[24]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_24 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 2.4
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[25]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_25 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 2.5
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[26]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_26 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 2.6
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[27]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_27 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 2.7
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[28]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_28 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 2.8
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[29]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_29 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 2.9
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[30]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_30 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 2 and beta_1 = 3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_2)
+  y=beta_1[31]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_2[i]){n=n+1}#comparing p value with alpha
+}
+
+power_31 = n/num_sims
+
+
+power_sigma_2 = c(power_1,power_2,power_3,power_4,power_5,power_6,power_7,power_8,power_9,power_10,power_11,power_12,power_13,power_14,power_15,power_16,power_17,power_18,power_19,power_20,power_21,power_22,power_23,power_24,power_25,power_26,power_27,power_28,power_29,power_30,power_31)
+
+
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[2]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha   
+}
+
+power_1 = n/num_sims
+
+
+
+#simulating y for sigma=4 and beta_1 = 0.2
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[3]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha  
+}
+
+power_2 = n/num_sims
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 0.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[4]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_3 = n/num_sims
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 0.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[4]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_4 = n/num_sims
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 0.4
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[5]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_5 = n/num_sims
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 0.5
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[6]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_6 = n/num_sims
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 0.6
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[7]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_7 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 0.7
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[8]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_8 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 0.8
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[9]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_9 = n/num_sims
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 0.9
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[10]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_10 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 1
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[11]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_11 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 1.1
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[12]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_12 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 1.2
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[13]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_13 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 1.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[14]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_14 = n/num_sims
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 1.4
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[15]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_15 = n/num_sims
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 1.5
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[16]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_16 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 1.6
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[17]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_17 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 1.7
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[18]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_18 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 1.8
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[19]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_19 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 1.9
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[20]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_20 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 2.0
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[21]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_21 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 2.1
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[22]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_22 = n/num_sims
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 2.2
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[23]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_23 = n/num_sims
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 2.3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[24]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_24 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 2.4
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[25]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_25 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 2.5
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[26]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_26 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 2.6
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[27]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_27 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 2.7
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[28]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_28 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 2.8
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[29]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_29 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 2.9
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[30]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_30 = n/num_sims
+
+
+
+n=0
+#simulating y for sigma = 4 and beta_1 = 3
+for (i in 1:num_sims)
+{
+  #simulating Y
+  e=rnorm(n=25,mean=0,sd=sigma_3)
+  y=beta_1[31]*x_values + e
+  model_1 = lm(y ~ x_values)
+  p_value[i]=summary(model_1)$coefficients[2,4]
+  if(p_value[i]<alpha_3[i]){n=n+1}#comparing p value with alpha
+}
+
+power_31 = n/num_sims
+
+
+power_sigma_3 = c(power_1,power_2,power_3,power_4,power_5,power_6,power_7,power_8,power_9,power_10,power_11,power_12,power_13,power_14,power_15,power_16,power_17,power_18,power_19,power_20,power_21,power_22,power_23,power_24,power_25,power_26,power_27,power_28,power_29,power_30,power_31)
+
+
+```
+
+
+##Results
+
+
+```{r}
+
+par(mfrow=c(1,3))
+
+plot(power_sigma_1~beta_1,type="o",col="red",xlab="Signal Strength",ylab="Power",main="Power Curve for Sigma = 1 and Alpha = 0.01")
+
+plot(power_sigma_2~beta_1,type="o",col="red",xlab="Signal Strength",ylab="Power",main="Power Curve for Sigma = 2 and Alpha = 0.05")
+
+plot(power_sigma_3~beta_1,type="o",col="red",xlab="Signal Strength",ylab="Power",main="Power Curve for Sigma = 4 and Alpha = 0.10")
+
+```
+
+
+##Discussion
+
+With increasing signal strength and sigma, the power increases and becomes steady after a certain signal strength. When sigma is 1, the power becomes constant signal strength 0.9. As sigma increases, the power becomes constant at signal strength 1.2 for sigma = 2 and signal strength = 2.5 for sigma = 4.Therefore, it can be observed that as sigma increases, the signal strength becomes constant at a higher values as compared to the previous sigma value. Moreover, 1000 simulations are enough since the trend is identified quite clearly. If we simulate 5000 times, the graphs are going to show a similar trend resulting in the same conclusion as above. 
